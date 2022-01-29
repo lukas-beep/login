@@ -341,7 +341,7 @@ def add_note(title: str, note: str) -> None:
     loaded_notes[id+1] = params
 
 
-def add_site(stdscr, name: str, msg: str = "", copyed_text: bool = False) -> None:
+def add_site(stdscr, msg: str = "") -> None:
     # TODO add copiing text
     stdscr.clear()
     stdscr.refresh()
@@ -349,10 +349,7 @@ def add_site(stdscr, name: str, msg: str = "", copyed_text: bool = False) -> Non
     stdscr.clear()
 
     stdscr.addstr(0, curses.COLS - len(msg) - 1, msg)
-    if copyed_text:
-        stdscr.addstr(
-            1, curses.COLS - len((msg := "The text was copyed to clipboard")) - 1, msg
-        )
+    
     stdscr.addstr(2, 2, "Here write your title and then note:")
 
     stdscr.addstr(16, 15, "'\\n' char is for new line")
@@ -385,6 +382,9 @@ def add_site(stdscr, name: str, msg: str = "", copyed_text: bool = False) -> Non
 def main(stdscr, name: str) -> None:
 
     global loaded_notes
+    f = open("notes.pickle", "a+")
+    f.close()
+    
     note_file = open("notes.pickle", "rb")
     try:
         loaded_notes = pickle.load(note_file)
@@ -405,7 +405,7 @@ def main(stdscr, name: str) -> None:
         if action == "view":
             view_site(stdscr, name)
         elif action == "add":
-            add_site(stdscr, name)
+            add_site(stdscr)
         elif action == "exitmenu":
             note_file = open("notes.pickle", "wb") 
             pickle.dump(loaded_notes, note_file)

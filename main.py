@@ -6,8 +6,10 @@ from utils import to_str, isvalidEmail
 from typing import List, Dict, Tuple, Optional, Union
 from curses import wrapper
 from curses.textpad import rectangle
+
 from quotes_site import main as quotes_site
 from notes_site import main as notes_site
+from todos_site import main as todos_site
 
 from menu import CursesMenu
 
@@ -157,7 +159,7 @@ def main_menu() -> str:
     option_1: dict = {"title": "QUOTES", "type": "quote", "command": "echo quote"}
     option_2: dict = {"title": "NOTES", "type": "notes", "command": "echo notes"}
     option_3: dict = {
-        "title": "TODOS - comming soon",
+        "title": "TODOS",
         "type": "todos",
         "command": "echo todos",
     }
@@ -211,7 +213,9 @@ def main(stdscr):
         #     if action == "quote":
         #         quotes_site(stdscr, name)
         #     elif action == "notes":
-        notes_site(stdscr, name)
+        #         notes_site(stdscr, name)
+        #     elif action == "todos":
+        todos_site(stdscr, name)
         #     elif action == "exitmenu":
         #         quit()
         #         break

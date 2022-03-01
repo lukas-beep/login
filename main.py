@@ -156,16 +156,29 @@ def main_menu() -> str:
         "subtitle": "Chosse main funcionality ",
     }
 
-    option_1: dict = {"title": "QUOTES", "type": "quote", "command": "echo quote"}
-    option_2: dict = {"title": "NOTES", "type": "notes", "command": "echo notes"}
+    option_1: dict = {
+        "title": "QUOTES - bug fixing (in 1 week)",
+        "type": "quote",
+        "command": "echo quote",
+                      }
+    option_2: dict = {
+        "title": "NOTES",
+        "type": "notes",
+        "command": "echo notes",
+        }
     option_3: dict = {
         "title": "TODOS",
         "type": "todos",
         "command": "echo todos",
     }
+    option_4: dict = {
+        "title": "STATS - comming soon (in 1 week)",
+        "type": "stats",
+        "command": "echo stats",
+    }
     # add here when more funcionalities
 
-    menu["options"] = [option_1, option_2, option_3]  # add to this list when more funcionalities
+    menu["options"] = [option_1, option_2, option_3, option_4]  # add to this list when more funcionalities
 
     m = CursesMenu(menu)
     selected_action: Dict[str, str] = m.display()
@@ -202,23 +215,25 @@ def main(stdscr):
         #     connection.close()
         #     quit()
 
-        name, email, password = "lukas", "hugo@gmail.com","lol12"
+        name, email, password = "anonymous", "anonymous@gmail.com","anonymous1"
         stdscr.clear()
         stdscr.refresh()
 
-        # while True:
-        #     stdscr.clear()
-        #     stdscr.refresh()
-        #     action: str = main_menu()
-        #     if action == "quote":
-        #         quotes_site(stdscr, name)
-        #     elif action == "notes":
-        #         notes_site(stdscr, name)
-        #     elif action == "todos":
-        todos_site(stdscr, name)
-        #     elif action == "exitmenu":
-        #         quit()
-        #         break
+        while True:
+            stdscr.clear()
+            stdscr.refresh()
+            action: str = main_menu()
+            if action == "quote":
+                pass #quotes_site(stdscr, name) #TODO FIXME
+            elif action == "notes":
+                notes_site(stdscr, name)
+            elif action == "todos":
+                todos_site(stdscr, name)
+            elif action == "stats":
+                pass #TODO: create stats menu
+            elif action == "exitmenu":
+                quit()
+                break
 
 wrapper(main)
 

@@ -3,3 +3,6 @@ users.db
 notes.pickle
 .vscode
 todos.pickle
+test.py
+corona_site.py
+quotes.db

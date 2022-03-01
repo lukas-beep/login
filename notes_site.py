@@ -1,4 +1,5 @@
 import curses
+from email import charset
 import random
 import typing
 import datetime
@@ -131,6 +132,70 @@ def view_edit_note(stdscr, id: int, notes_idxs: list, notes: List[list]) -> bool
     return edit_note(id, title, text)
 
 
+def input_area_manager(stdscr, type: str, notes_idxs: List[int], notes: list):
+    curses.echo()
+
+    if type == "d":
+        msg = "Here type id for delete: " 
+    elif type == "o":
+        msg = "Here type id for open: "
+    elif type == "e":
+        msg = "Here type id for edit: "
+    else:
+        return False
+        
+    stdscr.addstr(
+        1, curses.COLS - 7 - len(msg), msg
+    )
+    rectangle(stdscr, 0, curses.COLS - 7 - 1, 2, curses.COLS - 1)
+    stdscr.refresh()
+    id: str = to_str(stdscr.getstr(1, curses.COLS - 7, 6))
+    curses.noecho()
+    stdscr.refresh()
+    if type in id:
+        clear_input_area(stdscr)
+
+    elif not id.isdigit():
+        clear_input_area(stdscr)
+        stdscr.addstr(
+            1, curses.COLS - len((msg := "This id is not a digit")), msg
+        )
+        stdscr.refresh()
+        sleep(2)
+        clear_input_area(stdscr)
+    elif not int(id) in notes_idxs:
+        clear_input_area(stdscr)
+        stdscr.addstr(
+            1,
+            curses.COLS - len((msg := "Note with this id does not exsist")),
+            msg,
+        )
+        stdscr.refresh()
+        sleep(2)
+        clear_input_area(stdscr)
+    else:
+        stdscr.timeout(-1)
+        if type == "d":
+            new: bool = delete_note(int(id))
+            clear_input_area(stdscr)
+            stdscr.addstr(
+                1,
+                curses.COLS - len((msg := "Note was deleted")),
+                msg,
+            )
+            stdscr.refresh()
+            sleep(2)
+            clear_input_area(stdscr)
+        
+        elif type == "o":
+            new: bool = view_note(stdscr, int(id), notes_idxs, notes)
+        
+        elif type == "e":
+            new: bool = view_edit_note(stdscr, int(id), notes_idxs, notes)
+            
+        return new
+
+
 def view_site(stdscr, name: str):
     # TODO LATER: do resizable with update_lines_cols
 
@@ -150,7 +215,6 @@ def view_site(stdscr, name: str):
         )
         pad = curses.newpad(*pad_size)
 
-        #notes = notes[::-1] # sort notes from newest
         size_rectangle: List[int] = [0, 0, NOTE_HEIGHT, 20]  # height width
         for index, note_id in enumerate(notes):
             title_lines: list = word_split(notes[note_id][0], 18)
@@ -176,7 +240,7 @@ def view_site(stdscr, name: str):
             note_date: str = str(notes[note_id][2]).split(" ")[0]  # date
             pad.addstr(size_rectangle[2] - 1, size_rectangle[3] - 19, note_date)
                 
-            pad.hline(size_rectangle[0] + 4, size_rectangle[1] + 1, "-", 19)
+            pad.hline(size_rectangle[0] + 4, size_rectangle[1] + 1, curses.ACS_HLINE, 19)
             rectangle(pad, *size_rectangle)
 
             size_rectangle[1] += 27
@@ -205,115 +269,12 @@ def view_site(stdscr, name: str):
         key: int = stdscr.getch()
         if key == 113:  # q
             break
-        elif key == ord("d"):  # delete
-            curses.echo()
-            stdscr.addstr(
-                1, curses.COLS - 7 - len((msg := "Here type id for delete: ")), msg
-            )
-            rectangle(stdscr, 0, curses.COLS - 7 - 1, 2, curses.COLS - 1)
-            id: str = to_str(stdscr.getstr(1, curses.COLS - 7, 6))
-            curses.noecho()
-            if "d" in id:
-                clear_input_area(stdscr)
-
-            elif not id.isdigit():
-                clear_input_area(stdscr)
-                stdscr.addstr(
-                    1, curses.COLS - len((msg := "This id is not a digit")), msg
-                )
-                stdscr.refresh()
-                sleep(2)
-                clear_input_area(stdscr)
-            elif not int(id) in notes_idxs:
-                clear_input_area(stdscr)
-                stdscr.addstr(
-                    1,
-                    curses.COLS - len((msg := "Note with this id does not exsist")),
-                    msg,
-                )
-                stdscr.refresh()
-                sleep(2)
-                clear_input_area(stdscr)
-            else:
-                stdscr.timeout(-1)
-                new: bool = delete_note(int(id))
-                clear_input_area(stdscr)
-                stdscr.addstr(
-                    1,
-                    curses.COLS - len((msg := "Note was deleted")),
-                    msg,
-                )
-                stdscr.refresh()
-                sleep(2)
-                clear_input_area(stdscr)
-
-        elif key == ord("o"):  # open
-            curses.echo()
-            stdscr.addstr(
-                1, curses.COLS - 7 - len((msg := "Here type id for open: ")), msg
-            )
-            rectangle(stdscr, 0, curses.COLS - 7 - 1, 2, curses.COLS - 1)
-            id: str = to_str(stdscr.getstr(1, curses.COLS - 7, 6))
-            curses.noecho()
-            if "o" in id:
-                clear_input_area(stdscr)
-            elif not id.isdigit():
-                clear_input_area(stdscr)
-                stdscr.addstr(
-                    1, curses.COLS - len((msg := "This id is not a digit")), msg
-                )
-                stdscr.refresh()
-                sleep(2)
-                clear_input_area(stdscr)
-            elif not int(id) in notes_idxs:
-                clear_input_area(stdscr)
-                stdscr.addstr(
-                    1,
-                    curses.COLS - len((msg := "Note with this id does not exsist")),
-                    msg,
-                )
-                stdscr.refresh()
-                sleep(2)
-                clear_input_area(stdscr)
-            else:
-                stdscr.timeout(-1)
-                new: bool = view_note(stdscr, int(id), notes_idxs, notes)
-        elif key == ord("e"):
-            curses.echo()
-            stdscr.addstr(
-                1, curses.COLS - 7 - len((msg := "Here type id for edit: ")), msg
-            )
-            rectangle(stdscr, 0, curses.COLS - 7 - 1, 2, curses.COLS - 1)
-            id: int = to_str(stdscr.getstr(1, curses.COLS - 7, 6))
-            curses.noecho()
-            if "e" in id:
-                clear_input_area(stdscr)
-            elif not id.isdigit():
-                clear_input_area(stdscr)
-                stdscr.addstr(
-                    1, curses.COLS - len((msg := "This id is not a digit")), msg
-                )
-                stdscr.refresh()
-                sleep(2)
-                clear_input_area(stdscr)
-            elif not int(id) in notes_idxs:
-                clear_input_area(stdscr)
-                stdscr.addstr(
-                    1,
-                    curses.COLS - len((msg := "Note with this id does not exsist")),
-                    msg,
-                )
-                stdscr.refresh()
-                sleep(2)
-                clear_input_area(stdscr)
-            else:
-                stdscr.timeout(-1)
-                new: bool = view_edit_note(stdscr, int(id), notes_idxs, notes)
+        elif key in [ord("d"), ord("o"), ord("e")]:
+            new = input_area_manager(stdscr, chr(key), notes_idxs, notes)
 
         if (len(notes) / 5) > 2:
 
             if key == curses.KEY_DOWN:  # down arrow
-                stdscr.addstr("y")
                 if pad_row >= size_rectangle[2] - curses.LINES + 9:
                     pad_row: Literal[0, -1] = (
                         0 if pad_row > size_rectangle[2] - curses.LINES + 9 else -1
@@ -410,4 +371,4 @@ def main(stdscr, name: str) -> None:
             note_file = open("notes.pickle", "wb") 
             pickle.dump(loaded_notes, note_file)
             note_file.close()
-            exit()
+            break

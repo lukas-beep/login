@@ -127,5 +127,5 @@ def main(stdscr, name: str):
             break
 
 
-# LATER use typing module to simplyfi code to read by other person(module typing)
+# TODO LATER use typing module to simplyfi code to read by other person(module typing)
 # TODO do a func that search in view site(def main_site) for quotes filtered by name(def search_quote_by_name)

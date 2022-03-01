@@ -3,6 +3,7 @@ import regex as re
 
 from typing import List
 
+SPACE = " "
 
 def copy2clip(txt: str) -> int:
     cmd='echo ' + txt.strip() + '|clip'

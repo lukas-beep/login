@@ -2,7 +2,7 @@ import curses
 import typing
 import sqlite3
 
-from utils import to_str, isvalidEmail
+from utils import to_str, isvalidEmail, SPACE
 from typing import List, Dict, Tuple, Optional, Union
 from curses import wrapper
 from curses.textpad import rectangle
@@ -14,6 +14,59 @@ from todos_site import main as todos_site
 from menu import CursesMenu
 
 
+def check_font_site(stdscr):
+    CENTER = (curses.LINES // 2, curses.COLS // 2)
+    stdscr.addstr(
+        CENTER[0] - 2,
+        CENTER[1] - (len((msg := "FIRST CHECK IF YOU ARE HAVE RIGHT FONT")) // 2),
+        msg,
+    )
+    stdscr.addstr(
+        CENTER[0] - 1,
+        CENTER[1]
+        - (len((msg := "if you have right font than type 'done'")) // 2),
+        msg,
+    )
+    stdscr.addstr(
+        CENTER[0],
+        CENTER[1]
+        - (
+            len(
+                (
+                    msg := "you can dowloand one of my favoutites on 'https://bit.ly/JetBrainsMonoRegularNerdFontCompleteMono'"
+                )
+            )
+            // 2
+        ),
+        msg,
+    )
+    stdscr.addstr(
+        CENTER[0]+1,
+        CENTER[1]
+        - (
+            len(
+                (
+                    msg := "if font doesn't work try dowloand newest terminal on 'https://bit.ly/microsoft-WindowsTerminal'"
+                )
+            )
+            // 2
+        ),
+        msg,
+    )
+    cols = curses.COLS // 4-2 #* i have only 3 special chars in my program
+    stdscr.addstr( CENTER[0] + 3, cols+4, f"\u2193{SPACE*cols}\u2193{SPACE*cols}\u2193")
+    stdscr.addstr( CENTER[0] + 4, cols+4, f"\u2713{SPACE*(cols+1)}{SPACE*(cols)}\u2717")
+    rectangle(stdscr, CENTER[0] + 4 , cols*2+4 , CENTER[0] + 4+2 , cols*2+2+4 )
+    curses.echo()
+    while True:
+        rectangle(stdscr, CENTER[0] + 9 , CENTER[1]-3 , CENTER[0] + 11 , CENTER[1]+3 )
+        done = to_str(stdscr.getstr(CENTER[0] + 10, CENTER[1]-2, 5))
+        if "done" in done:
+            break
+
+        
+            
+    
 def login_menu() -> str:
     menu: dict = {
         "title": "Menu",
@@ -46,7 +99,6 @@ def signup(stdscr, msg: str = "") -> Tuple[str, str, str]:
     rectangle(stdscr, 3, 14, 5, 45)
     rectangle(stdscr, 6, 14, 8, 30)
     rectangle(stdscr, 9, 14, 11, 30)
-    
 
     name: str = to_str(stdscr.getstr(1, 15, 15))
     rectangle(stdscr, 0, 14, 2, 30)
@@ -160,12 +212,12 @@ def main_menu() -> str:
         "title": "QUOTES - bug fixing (in 1 week)",
         "type": "quote",
         "command": "echo quote",
-                      }
+    }
     option_2: dict = {
         "title": "NOTES",
         "type": "notes",
         "command": "echo notes",
-        }
+    }
     option_3: dict = {
         "title": "TODOS",
         "type": "todos",
@@ -178,7 +230,12 @@ def main_menu() -> str:
     }
     # add here when more funcionalities
 
-    menu["options"] = [option_1, option_2, option_3, option_4]  # add to this list when more funcionalities
+    menu["options"] = [
+        option_1,
+        option_2,
+        option_3,
+        option_4,
+    ]  # add to this list when more funcionalities
 
     m = CursesMenu(menu)
     selected_action: Dict[str, str] = m.display()
@@ -186,6 +243,7 @@ def main_menu() -> str:
 
 
 def main(stdscr):
+    check_font_site(stdscr)
     global cursor, connection
     connection = sqlite3.connect("users.db")
     cursor = connection.cursor()
@@ -193,8 +251,7 @@ def main(stdscr):
         "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT, password TEXT)"
     )
     connection.commit()
-    
-    
+
     stdscr.clear()
     stdscr.refresh()
 
@@ -215,7 +272,7 @@ def main(stdscr):
         #     connection.close()
         #     quit()
 
-        name, email, password = "anonymous", "anonymous@gmail.com","anonymous1"
+        name, email, password = "anonymous", "anonymous@gmail.com", "anonymous1"
         stdscr.clear()
         stdscr.refresh()
 
@@ -224,16 +281,17 @@ def main(stdscr):
             stdscr.refresh()
             action: str = main_menu()
             if action == "quote":
-                pass #quotes_site(stdscr, name) #TODO FIXME
+                pass  # quotes_site(stdscr, name) #TODO FIXME
             elif action == "notes":
                 notes_site(stdscr, name)
             elif action == "todos":
                 todos_site(stdscr, name)
             elif action == "stats":
-                pass #TODO: create stats menu
+                pass  # TODO: create stats menu
             elif action == "exitmenu":
                 quit()
                 break
+
 
 wrapper(main)
 

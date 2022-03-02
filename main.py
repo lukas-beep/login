@@ -1,11 +1,14 @@
 import curses
 import typing
 import sqlite3
+import mysql.connector
+import json
 
 from utils import to_str, isvalidEmail, SPACE
 from typing import List, Dict, Tuple, Optional, Union
 from curses import wrapper
 from curses.textpad import rectangle
+
 
 from quotes_site import main as quotes_site
 from notes_site import main as notes_site
@@ -67,15 +70,17 @@ def check_font_site(stdscr):
         
             
     
-def login_menu() -> str:
+def login_menu(empty) -> str:
     menu: dict = {
         "title": "Menu",
         "type": "menu",
         "subtitle": "Chosse login or signup ",
     }
-
-    option_1: dict = {"title": "LOG-IN", "type": "login", "command": "echo login"}
-
+    if not empty:
+        option_1: dict = {"title": "LOG-IN", "type": "login", "command": "echo login"}
+    else:
+        option_1: dict = {"title": "LOG-IN - no user created", "type": "empty", "command": "echo login"}
+        
     option_2: dict = {"title": "SIGN-UP", "type": "signup", "command": "echo signup"}
 
     menu["options"] = [option_1, option_2]
@@ -85,7 +90,7 @@ def login_menu() -> str:
     return selected_action["type"]
 
 
-def signup(stdscr, msg: str = "") -> Tuple[str, str, str]:
+def signup(stdscr,empty, msg: str = "") -> Tuple[str, str, str]:
     curses.echo()
     stdscr.clear()
 
@@ -93,7 +98,7 @@ def signup(stdscr, msg: str = "") -> Tuple[str, str, str]:
     stdscr.addstr(1, 1, "Name        : ")
     stdscr.addstr(4, 1, "Email       : ")
     stdscr.addstr(7, 1, "Password    : ")
-    stdscr.addstr(10, 1, "re-Password : ")
+    stdscr.addstr(10, 1,"re-Password : ")
 
     rectangle(stdscr, 0, 14, 2, 30)
     rectangle(stdscr, 3, 14, 5, 45)
@@ -118,42 +123,48 @@ def signup(stdscr, msg: str = "") -> Tuple[str, str, str]:
     key: str = stdscr.getkey()
 
     if key == "r":
-        name, email, password = signup(stdscr)
+        name, email, password = signup(stdscr, empty)
     elif key == "q":
         curses.endwin()
         quit()
     else:
         if not isvalidEmail(email):
-            name, email, password = signup(stdscr, "Invalid email syntax")
+            name, email, password = signup(stdscr,empty, "Invalid email syntax")
         if password != password2:
-            name, email, password = signup(stdscr, "Password mismatch")
-        names = cursor.execute("SELECT name FROM users").fetchall()
-        if name in names:
-            name, email, password = signup(stdscr, "Name already used")
-        usr = find_user(name, email, password)
-        if not usr:
-            add_user(name, email, password)
+            name, email, password = signup(stdscr,empty, "Password mismatch")
+        if not empty:
+            names = cursor.execute("SELECT name FROM users").fetchall()
+            if name in names:
+                name, email, password = signup(stdscr,empty, "Name already used")
+            usr = find_user(name, email, password)
+            if not usr:
+                add_user(name, email, password)
+            else:
+                name, email, password = signup(stdscr,empty, "User already exsist")
         else:
-            name, email, password = signup(stdscr, "User already exsist")
+            add_user(name, email, password)
     stdscr.refresh()
 
     return name, email, password
 
 
 def add_user(name: str, email: str, password: str):
-    params = (name, email, password)
-    cursor.execute("INSERT INTO users (name, email, password) VALUES (?,?,?)", params)
+    params = (name, email, password, "0.0.1")
+    cursor.execute("INSERT INTO users (name, email, password, version) VALUES (%s,%s,%s,%s)", params)
     connection.commit()
 
 
-def find_user(name: str, email: str, password: str) -> Tuple[bool, str]:
+def find_user(name: str, email: str, password: str) -> bool:
     try:
         params: tuple = (name, email, password)
-        user = cursor.execute(
-            "SELECT * FROM users WHERE name = ? AND email = ? AND password = ?", params
-        ).fetchone()
-        if user:
+        cursor.execute(
+            "SELECT * FROM users WHERE name = %s AND email = %s AND password = %s", params
+        )
+        user = cursor.fetchone()
+        if bool(user):
             return True
+        else:
+            return False
     except:
         return False
 
@@ -183,6 +194,7 @@ def login(stdscr, msg: str = "") -> Tuple[str, str, str]:
     stdscr.addstr(15, 5, "if you want to continue then press | Any")
     stdscr.addstr(16, 5, "if you want to correct then press  | r")
     stdscr.addstr(17, 5, "if you want to quit then press     | q")
+    stdscr.addstr(19, 5, "if you forget your password contact me :)")
     key: str = stdscr.getkey()
 
     if key == "r":
@@ -243,14 +255,28 @@ def main_menu() -> str:
 
 
 def main(stdscr):
-    check_font_site(stdscr)
+    with open("settings.json", "r", encoding="utf-8") as f:
+        settings = json.load(f)
+        f.close()
+    
+    if settings.get("show_font_checker"):
+        check_font_site(stdscr)
+        settings["show_font_checker"] = False
     global cursor, connection
-    connection = sqlite3.connect("users.db")
-    cursor = connection.cursor()
+    connection = mysql.connector.connect(
+                    host="bnyxgmi7adot4awxzxuf-mysql.services.clever-cloud.com",
+                    user="uili7quaflntwgrs",
+                    password="OO8ZOU5Xi5l3knqWSH2Z",
+                    database="bnyxgmi7adot4awxzxuf"
+                    )
+    cursor = connection.cursor(buffered=True)
     cursor.execute(
-        "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT, password TEXT)"
+        "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTO_INCREMENT, name VARCHAR(255), email VARCHAR(255), password VARCHAR(255), version VARCHAR(255))"
     )
     connection.commit()
+    cursor.execute("SELECT id FROM `users`")
+    empty = cursor.fetchone()
+    empty =  not bool(empty)
 
     stdscr.clear()
     stdscr.refresh()
@@ -261,18 +287,20 @@ def main(stdscr):
     email: str
     password: str
     while True:
-        # stdscr.clear()
-        # stdscr.refresh()
-        # action: str = login_menu()
-        # if action == "signup":
-        #     name, email, password = signup(stdscr)
-        # elif action == "login":
-        #     name, email, password = login(stdscr)
-        # elif action == "exitmenu":
-        #     connection.close()
-        #     quit()
+        while True:
+            stdscr.clear()
+            stdscr.refresh()
+            action: str = login_menu(empty)
+            if action == "signup":
+                name, email, password = signup(stdscr, empty)
+                break
+            elif action == "login":
+                name, email, password = login(stdscr)
+                break
+            elif action == "exitmenu":
+                connection.close()
+                quit()
 
-        name, email, password = "anonymous", "anonymous@gmail.com", "anonymous1"
         stdscr.clear()
         stdscr.refresh()
 
@@ -289,8 +317,11 @@ def main(stdscr):
             elif action == "stats":
                 pass  # TODO: create stats menu
             elif action == "exitmenu":
+                connection.close()
+                with open("settings.json", "w", encoding="utf-8") as f:
+                    json.dump(settings,f, indent=4)
+                    f.close()
                 quit()
-                break
 
 
 wrapper(main)

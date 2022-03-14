@@ -3,18 +3,17 @@ import typing
 import sqlite3
 import mysql.connector
 import json
+import sys
 
-from utils import to_str, isvalidEmail, SPACE
+from utils.utils import to_str, isvalidEmail, SPACE
 from typing import List, Dict, Tuple, Optional, Union
 from curses import wrapper
 from curses.textpad import rectangle
 
+from sites.notes_site import main as notes_site
+from sites.todos_site import main as todos_site
 
-from quotes_site import main as quotes_site
-from notes_site import main as notes_site
-from todos_site import main as todos_site
-
-from menu import CursesMenu
+from utils.menu import CursesMenu
 
 
 def check_font_site(stdscr):
@@ -126,14 +125,15 @@ def signup(stdscr,empty, msg: str = "") -> Tuple[str, str, str]:
         name, email, password = signup(stdscr, empty)
     elif key == "q":
         curses.endwin()
-        quit()
+        sys.exit()
     else:
         if not isvalidEmail(email):
             name, email, password = signup(stdscr,empty, "Invalid email syntax")
         if password != password2:
             name, email, password = signup(stdscr,empty, "Password mismatch")
         if not empty:
-            names = cursor.execute("SELECT name FROM users").fetchall()
+            cursor.execute("SELECT name FROM users")
+            names = cursor.fetchall()
             if name in names:
                 name, email, password = signup(stdscr,empty, "Name already used")
             usr = find_user(name, email, password)
@@ -201,7 +201,7 @@ def login(stdscr, msg: str = "") -> Tuple[str, str, str]:
         name, email, password = login(stdscr)
     elif key == "q":
         curses.endwin()
-        quit()
+        sys.exit()
     else:
         if not isvalidEmail(email):
             name, email, password = login(stdscr, "Invalid email syntax")
@@ -220,11 +220,6 @@ def main_menu() -> str:
         "subtitle": "Chosse main funcionality ",
     }
 
-    option_1: dict = {
-        "title": "QUOTES - bug fixing (in 1 week)",
-        "type": "quote",
-        "command": "echo quote",
-    }
     option_2: dict = {
         "title": "NOTES",
         "type": "notes",
@@ -243,7 +238,6 @@ def main_menu() -> str:
     # add here when more funcionalities
 
     menu["options"] = [
-        option_1,
         option_2,
         option_3,
         option_4,
@@ -252,7 +246,6 @@ def main_menu() -> str:
     m = CursesMenu(menu)
     selected_action: Dict[str, str] = m.display()
     return selected_action["type"]
-
 
 def main(stdscr):
     with open("settings.json", "r", encoding="utf-8") as f:
@@ -293,13 +286,15 @@ def main(stdscr):
             action: str = login_menu(empty)
             if action == "signup":
                 name, email, password = signup(stdscr, empty)
+                connection.close()
                 break
             elif action == "login":
                 name, email, password = login(stdscr)
+                connection.close()
                 break
             elif action == "exitmenu":
                 connection.close()
-                quit()
+                sys.exit()
 
         stdscr.clear()
         stdscr.refresh()
@@ -308,20 +303,17 @@ def main(stdscr):
             stdscr.clear()
             stdscr.refresh()
             action: str = main_menu()
-            if action == "quote":
-                pass  # quotes_site(stdscr, name) #TODO FIXME
-            elif action == "notes":
+            if action == "notes":
                 notes_site(stdscr, name)
             elif action == "todos":
                 todos_site(stdscr, name)
             elif action == "stats":
                 pass  # TODO: create stats menu
             elif action == "exitmenu":
-                connection.close()
                 with open("settings.json", "w", encoding="utf-8") as f:
                     json.dump(settings,f, indent=4)
                     f.close()
-                quit()
+                sys.exit()
 
 
 wrapper(main)

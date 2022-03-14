@@ -6,11 +6,11 @@ import datetime
 import pickle
 
 from time import sleep
-from utils import copy2clip, to_str, WhenItsMoreThanIstMore, iota, len_of_words, word_split
+from utils.utils import copy2clip, to_str, WhenItsMoreThanIstMore, iota, len_of_words, word_split
 from typing import List, Dict, Literal, Tuple, Optional, Union, Any
 from curses.textpad import Textbox, rectangle
 
-from menu import CursesMenu
+from utils.menu import CursesMenu
 
 
 def menu(is_note=True) -> str:

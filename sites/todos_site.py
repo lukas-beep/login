@@ -5,11 +5,10 @@ import datetime
 import pickle
 
 from time import sleep
-from utils.utils import copy2clip, to_str, WhenItsMoreThanIstMore, iota, len_of_words, word_split, SPACE
 from typing import List, Dict, Literal, Tuple, Optional, Union, Any
 from curses.textpad import Textbox, rectangle
 
-from utils.menu import CursesMenu
+from utils import *
 
 def menu(is_todo=True) -> Optional[str]:
     menu: dict = {"title": "Menu", "type": "menu", "subtitle": "Todos menu"}

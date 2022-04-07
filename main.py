@@ -5,15 +5,13 @@ import mysql.connector
 import json
 import sys
 
-from utils.utils import to_str, isvalidEmail, SPACE
 from typing import List, Dict, Tuple, Optional, Union
 from curses import wrapper
 from curses.textpad import rectangle
 
-from sites.notes_site import main as notes_site
-from sites.todos_site import main as todos_site
+from utils import *
+from sites import *
 
-from utils.menu import CursesMenu
 
 
 def check_font_site(stdscr):
@@ -154,7 +152,7 @@ def add_user(name: str, email: str, password: str):
     connection.commit()
 
 
-def find_user(name: str, email: str, password: str) -> bool:
+def find_user(name: str, email: str, password: str) -> bool:  
     try:
         params: tuple = (name, email, password)
         cursor.execute(

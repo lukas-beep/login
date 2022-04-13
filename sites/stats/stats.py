@@ -1,17 +1,18 @@
 import curses
+import random
 import typing
-import sqlite3
-import mysql.connector
-import json
+import datetime
+import pickle
 import sys
 
-from utils.utils import to_str, isvalidEmail, SPACE
-from typing import List, Dict, Tuple, Optional, Union
-from curses.textpad import rectangle
+from time import sleep
 
-from corona_site import main as corona_site
+from typing import List, Dict, Literal, Tuple, Optional, Union, Any
+from curses.textpad import Textbox, rectangle
 
-from utils.menu import CursesMenu
+from utils import *
+
+from sites.stats.corona_site import main as corona_site
 
 def stats_menu(stdscr):
     menu: dict = {
@@ -35,13 +36,12 @@ def stats_menu(stdscr):
     selected_action: Dict[str, str] = m.display()
     return selected_action["type"]
 
-def main(stdscr):
+def main(stdscr, name):
     while True:
         stdscr.clear()
         stdscr.refresh()
-        action: str = stats_menu()
+        action: str = stats_menu(stdscr)
         if action == "covid":
-            corona_site(stdscr)
-            break
+            corona_site(stdscr, name)
         elif action == "exitmenu":
-            sys.exit()
+            return

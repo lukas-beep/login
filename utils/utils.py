@@ -2,12 +2,24 @@ import subprocess
 import regex as re
 
 from typing import List
+from datetime import timedelta
 
 SPACE = " "
 
 def copy2clip(txt: str) -> int:
     cmd='echo ' + txt.strip() + '|clip'
     return subprocess.check_call(cmd, shell=True)
+
+
+def set_date(date, today):
+    if date == "today":
+        correct_date = today
+    elif date == "yesterday":
+        correct_date = today - timedelta(days=1)
+        correct_date = correct_date
+    else:
+        correct_date = date
+    return str(correct_date)
 
 
 def len_of_words(l: List[str]) -> tuple:

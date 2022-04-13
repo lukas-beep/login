@@ -229,7 +229,7 @@ def main_menu() -> str:
         "command": "echo todos",
     }
     option_4: dict = {
-        "title": "STATS - comming soon (in 1 week)",
+        "title": "STATS",
         "type": "stats",
         "command": "echo stats",
     }
@@ -277,41 +277,46 @@ def main(stdscr):
     name: str
     email: str
     password: str
-    while True:
-        while True:
-            stdscr.clear()
-            stdscr.refresh()
-            action: str = login_menu(empty)
-            if action == "signup":
-                name, email, password = signup(stdscr, empty)
-                connection.close()
-                break
-            elif action == "login":
-                name, email, password = login(stdscr)
-                connection.close()
-                break
-            elif action == "exitmenu":
-                connection.close()
-                sys.exit()
+    # while True:
+    #     while True:
+    #         stdscr.clear()
+    #         stdscr.refresh()
+    #         action: str = login_menu(empty)
+    #         if action == "signup":
+    #             name, email, password = signup(stdscr, empty)
+    #             connection.close()
+    #             break
+    #         elif action == "login":
+    #             name, email, password = login(stdscr)
+    #             connection.close()
+    #             break
+    #         elif action == "exitmenu":
+    #             connection.close()
+    #             sys.exit()
+    
 
+    name = "test"
+    email = "test@gmail.com"
+    password = "test12"
+    
+    stdscr.clear()
+    stdscr.refresh()
+
+    while True:
         stdscr.clear()
         stdscr.refresh()
-
-        while True:
-            stdscr.clear()
-            stdscr.refresh()
-            action: str = main_menu()
-            if action == "notes":
-                notes_site(stdscr, name)
-            elif action == "todos":
-                todos_site(stdscr, name)
-            elif action == "stats":
-                pass  # TODO: create stats menu
-            elif action == "exitmenu":
-                with open("settings.json", "w", encoding="utf-8") as f:
-                    json.dump(settings,f, indent=4)
-                    f.close()
-                sys.exit()
+        action: str = main_menu()
+        if action == "notes":
+            notes_site(stdscr, name)
+        elif action == "todos":
+            todos_site(stdscr, name)
+        elif action == "stats":
+            stats_menu(stdscr, name)
+        elif action == "exitmenu":
+            with open("settings.json", "w", encoding="utf-8") as f:
+                json.dump(settings,f, indent=4)
+                f.close()
+            sys.exit()
 
 
 wrapper(main)

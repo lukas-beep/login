@@ -1,12 +1,10 @@
 import curses
-from email import charset
 import random
 import typing
 import datetime
 import pickle
 
 from time import sleep
-
 from typing import List, Dict, Literal, Tuple, Optional, Union, Any
 from curses.textpad import Textbox, rectangle
 

@@ -17,6 +17,9 @@ def set_date(date, today):
     elif date == "yesterday":
         correct_date = today - timedelta(days=1)
         correct_date = correct_date
+    elif date == "yesterday2":
+        correct_date = today - timedelta(days=2)
+        correct_date = correct_date
     else:
         correct_date = date
     return str(correct_date)

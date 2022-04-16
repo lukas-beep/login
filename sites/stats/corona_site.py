@@ -13,8 +13,8 @@ from curses.textpad import Textbox, rectangle
 from utils import *
 
 
-def parse_web():
-    page = requests.get("https://www.worldometers.info/coronavirus/#countries")
+def parse_web(url_end="#countries"):
+    page = requests.get(f"https://www.worldometers.info/coronavirus/{url_end}")
     soup = BeautifulSoup(page.text, "html.parser")
     return soup
 
@@ -31,7 +31,7 @@ def find_state_info(soup, state, covid_info, today):
                 text = i.split("<")[2].split(">")[-1]
 
             if text == "" or text == "N/A" or text == " ":
-                li.append(None)
+                li.append("N/A")
             else:
                 li.append(text)
         except:
@@ -43,14 +43,14 @@ def find_state_info(soup, state, covid_info, today):
     append_to_dic(li, covid_info, today)
 
 
-def create_dic_info(soup, states, covid_info, today):
+def create_dic_info(soup, states, covid_info, today, n):
     percentage(
         states,
         [4, 32, curses.LINES // 2 - 2, curses.COLS // 2 - 16],
         find_state_info,
         soup,
         covid_info,
-        today,
+        today, n
     )
 
 
@@ -128,10 +128,18 @@ def main(stdscr, name: str) -> None:
     f = open("corona.pickle", "a+")
     f.close()
     corona_file = open("corona.pickle", "rb")
+    loading = 0
     try:
         loaded_corona_info = pickle.load(corona_file)
         if loaded_corona_info.get(str(today)) == None:
             loaded_corona_info.update({str(today): {}})
+            loading += 1
+        # if loaded_corona_info.get(str(today - timedelta(days=1))) == None:
+        #     loaded_corona_info.update({str(today - timedelta(days=1)): {}})
+        #     loading += 1
+        # if loaded_corona_info.get(str(today - timedelta(days=2))) == None:
+        #     loaded_corona_info.update({str(today - timedelta(days=2)): {}})
+        #     loading += 1
     except EOFError:
         loaded_corona_info = {str(today): {}}
     corona_file.close()
@@ -141,8 +149,19 @@ def main(stdscr, name: str) -> None:
     stdscr.refresh()
     if loaded_corona_info.get(str(today)) == {}:
         soup = parse_web()
-        create_dic_info(soup, states, loaded_corona_info, today)
+        create_dic_info(soup, states, loaded_corona_info, today, loading)
+        loading -= 1
         stdscr.clear()
+    # if loaded_corona_info.get(str(today - timedelta(days=1))) == {}:
+    #     soup = parse_web("#nav-yesterday")
+    #     create_dic_info(soup, states, loaded_corona_info, today - timedelta(days=1), loading)
+    #     loading -= 1
+    #     stdscr.clear()
+    # if loaded_corona_info.get(str(today - timedelta(days=2))) == {}:
+    #     soup = parse_web("#nav-yesterday2")
+    #     create_dic_info(soup, states, loaded_corona_info, today - timedelta(days=2), loading)
+    #     loading -= 1
+    #     stdscr.clear()
 
     stdscr.addstr(0, 5, "Corona Virus Tracker")
     stdscr.addstr(
@@ -155,7 +174,7 @@ def main(stdscr, name: str) -> None:
             curses.echo()
             curses.curs_set(1)
             coordinates = to_str(stdscr.getstr(5, 69, curses.COLS - 69 - 1))
-            if coordinates == "q":
+            if coordinates == ("q" * len(coordinates)):
                 save_data(loaded_corona_info)
                 return
             coordinates = coordinates.split(",,")
@@ -169,6 +188,13 @@ def main(stdscr, name: str) -> None:
                 break
 
         date = set_date(coordinates[0], today)
+        if loaded_corona_info.get(str(date)) == None: 
+            stdscr.addstr(0, curses.COLS - len((msg := "this date is invalid or is unreachable")) - 1, msg)
+            stdscr.refresh()
+            sleep(1.5)
+            clear_input_area(stdscr)
+            continue
+            
         states = coordinates[1].split(",")
         crerate_table(stdscr, states, upper_states, loaded_corona_info, date)
         key = stdscr.getch()

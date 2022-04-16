@@ -12,3 +12,8 @@ how to use:
   - you can use 'o' for open, 'd' for delete, 'e' for edit
 - TODOS:
   - you can use 'o' for open, 'd' for delete
+- STATS:
+  - COVID-19:
+    - you can write coordinates(DATE,,STATE,...) and this will generate table of states and informations
+      - [DATE] > "today", "yesterday", "yesterday2" or specific date (in format YYYY-MM-DD)
+        - !!! for now only days that you opened COVID-19 are saved !!!

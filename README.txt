@@ -15,5 +15,5 @@ how to use:
 - STATS:
   - COVID-19:
     - you can write coordinates(DATE,,STATE,...) and this will generate table of states and informations
-      - [DATE] > "today", "yesterday" or specific date (in format YYYY-MM-DD)
+      - [DATE] > "today", "yesterday", "yesterday2" or specific date (in format YYYY-MM-DD)
         - !!! for now only days that you opened COVID-19 !!!
